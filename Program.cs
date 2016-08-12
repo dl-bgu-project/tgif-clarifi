@@ -41,13 +41,14 @@ namespace tgif_clarifi
                     {
                         tagsOutput = tagsOutput + tag.ToString() + ",";
                     }
-                    tagsOutput.Remove(tagsOutput.Length - 2);
+                    if (tagsOutput.Length > 2)
+                        tagsOutput.Remove(tagsOutput.Length - 2);
 
                     // This text is always added, making the file longer over time
                     // if it is not deleted.
                     using (StreamWriter sw = File.AppendText("tgif_clarifi_results.csv"))
                     {
-                        sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", " + EscapeCSV(tagsOutput) + gifRes.time);
+                        sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", \"" + EscapeCSV(tagsOutput) +"\" ,"+ gifRes.time);
                     }
                     countId++;
                 }
