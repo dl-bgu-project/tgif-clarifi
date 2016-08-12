@@ -7,10 +7,10 @@ namespace tgif_clarifi
 {
     public class Tag
     {
-        private readonly string name;
-        private readonly double probability;
+        string name;
+        double probability;
 
-        Tag(string name, double probability)
+        public Tag(string name, double probability)
         {
             this.name = name;
             this.probability = probability;
@@ -34,7 +34,7 @@ namespace tgif_clarifi
 
         public override string ToString()
         {
-            return "[Tag " + name + ": " + probability + "]";
+            return "[" + name + ": " + probability + "]";
         }
     }
 }

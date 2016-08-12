@@ -1,8 +1,11 @@
 ﻿using FileHelpers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
@@ -25,10 +28,49 @@ namespace tgif_clarifi
         {
             ReadTgifFile();
             string token = RetrieveAccessToken();
+            int countId = 1;
             foreach (Gif gif in gif_array)
             {
+                Console.WriteLine(Environment.NewLine + "Runing for image #id = " + countId);
+                GifResult gifRes = RunTagForUrl(gif);
 
+                string tagsOutput = "";
+                foreach (Tag tag in gifRes.tagsList)
+                {                    
+                    tagsOutput = tagsOutput + tag.ToString() + ",";
+                }
+                tagsOutput.Remove(tagsOutput.Length - 2);
+
+                // This text is always added, making the file longer over time
+                // if it is not deleted.
+                using (StreamWriter sw = File.AppendText("tgif_clarifi_results.csv"))
+                {
+
+                    sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", " + EscapeCSV(tagsOutput) + gifRes.time);
+                }
+                countId++;
             }
+            
+        }
+
+        public static string EscapeCSV(string data)
+        {
+            if (data.Contains("\""))
+            {
+                data = data.Replace("\"", "\"\"");
+            }
+
+            if (data.Contains(","))
+            {
+                data = String.Format("\"{0}\"", data);
+            }
+
+            if (data.Contains(System.Environment.NewLine))
+            {
+                data = String.Format("\"{0}\"", data);
+            }
+
+            return data;
         }
 
         static Gif[] ReadTgifFile()
@@ -44,6 +86,7 @@ namespace tgif_clarifi
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 log.Error(ex);
             }
             return null;
@@ -88,7 +131,59 @@ namespace tgif_clarifi
             return "";
         }
 
-        
+        /// <summary>
+        /// Launch the legacy application with some options set.
+        /// </summary>
+        static GifResult RunTagForUrl(Gif gif)
+        {
+            GifResult gifRes = new GifResult();
+            try
+            {
+                gifRes.gif = gif;
+                var proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "Run.bat",
+                        Arguments = gif.GifUrl,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+                // Create new stopwatch.
+                Stopwatch stopwatch = new Stopwatch();
+
+                // Begin timing.
+                stopwatch.Start();
+                proc.Start();
+                stopwatch.Stop();
+                gifRes.time = stopwatch.Elapsed.TotalMilliseconds + " ms";
+
+                List<Tag> tagsList = new List<Tag>();
+                while (!proc.StandardOutput.EndOfStream)
+                {
+                    string line = proc.StandardOutput.ReadLine();
+                    Console.WriteLine(line);
+                    if (line.Contains("("))
+                    {
+                        string[] tagResults = line.Replace(")", "").Split('(');
+                        Tag tag = new Tag(tagResults[0].Trim(), Double.Parse(tagResults[1].Trim()));
+                        tagsList.Add(tag);
+                    }
+                }
+
+                gifRes.tagsList = tagsList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error(ex);
+            }
+
+            return gifRes;
+        }
+
 
     }
 }
