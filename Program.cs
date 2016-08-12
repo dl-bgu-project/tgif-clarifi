@@ -28,9 +28,16 @@ namespace tgif_clarifi
         {
             try
             {
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("Empty tgif file as argument");
+                    return;
+                }
                 ReadTgifFile();
-                string token = RetrieveAccessToken();
+                //string token = RetrieveAccessToken();
                 int countId = 1;
+                if (!String.IsNullOrEmpty(args[1]))
+                    countId = Int32.Parse(args[1]);
                 foreach (Gif gif in gif_array)
                 {
                     Console.WriteLine(Environment.NewLine + "Runing for image #id = " + countId);

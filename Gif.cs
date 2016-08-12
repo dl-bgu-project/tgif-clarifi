@@ -6,9 +6,10 @@ using FileHelpers;
 
 namespace tgif_clarifi
 {   
-    [DelimitedRecord("\t")]
+    [DelimitedRecord("|")]
     class Gif
     {
+        public int GifId { get; set; }
         public string GifUrl { get; set; }
         public string GifDesc { get; set; }
     }
