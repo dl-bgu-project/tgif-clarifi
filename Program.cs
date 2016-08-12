@@ -26,28 +26,36 @@ namespace tgif_clarifi
 
         static void Main(string[] args)
         {
-            ReadTgifFile();
-            string token = RetrieveAccessToken();
-            int countId = 1;
-            foreach (Gif gif in gif_array)
+            try
             {
-                Console.WriteLine(Environment.NewLine + "Runing for image #id = " + countId);
-                GifResult gifRes = RunTagForUrl(gif);
-
-                string tagsOutput = "";
-                foreach (Tag tag in gifRes.tagsList)
-                {                    
-                    tagsOutput = tagsOutput + tag.ToString() + ",";
-                }
-                tagsOutput.Remove(tagsOutput.Length - 2);
-
-                // This text is always added, making the file longer over time
-                // if it is not deleted.
-                using (StreamWriter sw = File.AppendText("tgif_clarifi_results.csv"))
+                ReadTgifFile();
+                string token = RetrieveAccessToken();
+                int countId = 1;
+                foreach (Gif gif in gif_array)
                 {
-                    sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", " + EscapeCSV(tagsOutput) + gifRes.time);
+                    Console.WriteLine(Environment.NewLine + "Runing for image #id = " + countId);
+                    GifResult gifRes = RunTagForUrl(gif);
+
+                    string tagsOutput = "";
+                    foreach (Tag tag in gifRes.tagsList)
+                    {
+                        tagsOutput = tagsOutput + tag.ToString() + ",";
+                    }
+                    tagsOutput.Remove(tagsOutput.Length - 2);
+
+                    // This text is always added, making the file longer over time
+                    // if it is not deleted.
+                    using (StreamWriter sw = File.AppendText("tgif_clarifi_results.csv"))
+                    {
+                        sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", " + EscapeCSV(tagsOutput) + gifRes.time);
+                    }
+                    countId++;
                 }
-                countId++;
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+                Console.WriteLine(ex);
             }
             
         }
