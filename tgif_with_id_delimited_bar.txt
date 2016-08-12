@@ -1,0 +1,11 @@
+
+
+
+GIT_COMMITTER_EMAIL=dl.bgu.project@gmail.com
+GIT_AUTHOR_EMAIL=dl.bgu.project@gmail.com
+
+git config user.email "dl.bgu.project@gmail.com"
+
+ssh-keygen -t rsa -b 4096 -C "dl.bgu.project@gmail.com"
+
+
