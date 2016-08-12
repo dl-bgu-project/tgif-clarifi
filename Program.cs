@@ -45,7 +45,6 @@ namespace tgif_clarifi
                 // if it is not deleted.
                 using (StreamWriter sw = File.AppendText("tgif_clarifi_results.csv"))
                 {
-
                     sw.WriteLine(countId + ", \"" + gifRes.gif.GifUrl + "\", \"" + EscapeCSV(gifRes.gif.GifDesc) + "\", " + EscapeCSV(tagsOutput) + gifRes.time);
                 }
                 countId++;
