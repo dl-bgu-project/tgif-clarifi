@@ -1,4 +1,5 @@
-﻿using FileHelpers;
+﻿using CsvHelper;
+using FileHelpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -19,10 +20,10 @@ namespace tgif_clarifi
         private static readonly long MIN_TTL_MS = 60000;
         private static string client_id = "hkOom3PZmyIrKsyyx8mYU7nJ5gM2BU_TT_N8h4jI";
         private static string client_secret = "Xan8IwoAc2qKqPve_T6HzW46y6AJlUM39rqhElVB";
-        private static readonly string tgif_file_path = "tgif-v1.0.tsv.txt";
+        private static string tgif_file_path;
         private static string access_token;
         private static long expiration;
-        private static Gif[] gif_array;
+        private static List<Gif> gif_array;
 
         static void Main(string[] args)
         {
@@ -33,13 +34,17 @@ namespace tgif_clarifi
                     Console.WriteLine("Empty tgif file as argument");
                     return;
                 }
-                ReadTgifFile();
+                ReadTgifFile(args[0]);
                 //string token = RetrieveAccessToken();
                 int countId = 1;
-                if (!String.IsNullOrEmpty(args[1]))
-                    countId = Int32.Parse(args[1]);
+                if (args.Length > 1 && !String.IsNullOrEmpty(args[1]))
+                    countId = Int32.Parse(args[1]) + 1;
                 foreach (Gif gif in gif_array)
                 {
+                    if (countId != 1 && gif.GifId < countId)
+                    {
+                        continue;
+                    }
                     Console.WriteLine(Environment.NewLine + "Runing for image #id = " + countId);
                     GifResult gifRes = RunTagForUrl(gif);
 
@@ -88,14 +93,16 @@ namespace tgif_clarifi
             return data;
         }
 
-        static Gif[] ReadTgifFile()
+        static List<Gif> ReadTgifFile(string filePath)
         {
             try
             {
-                var engine = new FileHelperEngine<Gif>();
-
-                // To Read Use:
-                gif_array = engine.ReadFile(tgif_file_path);
+                tgif_file_path = filePath;
+                TextReader reader = File.OpenText(tgif_file_path);
+                var csv = new CsvReader(reader);
+                csv.Configuration.Delimiter = "|";
+                csv.Configuration.HasHeaderRecord = false;
+                gif_array = csv.GetRecords<Gif>().ToList();                
 
                 return gif_array;
             }
